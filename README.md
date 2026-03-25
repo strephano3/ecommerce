@@ -44,12 +44,14 @@ Il progetto invia email automatiche tramite Resend per:
 - pagamento confermato
 - ordine spedito
 - rimborso emesso
+- notifica interna negozio quando un ordine viene pagato
 
 Per l'invio reale serve:
 
 - `RESEND_API_KEY`
 - `EMAIL_FROM`
 - `EMAIL_REPLY_TO`
+- `ORDER_NOTIFICATION_EMAIL` opzionale
 - dominio mittente verificato in Resend con i record DNS richiesti
 
 ## Webhook Stripe

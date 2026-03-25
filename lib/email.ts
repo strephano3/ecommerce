@@ -14,6 +14,7 @@ function required(name: string, value?: string) {
 const resend = new Resend(required("RESEND_API_KEY", process.env.RESEND_API_KEY));
 const emailFrom = required("EMAIL_FROM", process.env.EMAIL_FROM);
 const emailReplyTo = process.env.EMAIL_REPLY_TO;
+const orderNotificationEmail = process.env.ORDER_NOTIFICATION_EMAIL ?? emailReplyTo;
 
 type MailTemplate = {
   subject: string;
@@ -120,6 +121,35 @@ async function refundedTemplate(orderId: string): Promise<MailTemplate> {
   };
 }
 
+async function adminOrderPaidTemplate(orderId: string): Promise<MailTemplate> {
+  const { order, items } = await orderSummary(orderId);
+
+  const shipping = order.shippingAddress
+    ? `
+        <p style="margin:0 0 6px;"><strong>Cliente:</strong> ${order.shippingAddress.fullName}</p>
+        <p style="margin:0 0 6px;"><strong>Email:</strong> ${order.email}</p>
+        <p style="margin:0 0 6px;"><strong>Indirizzo:</strong> ${order.shippingAddress.line1}${
+          order.shippingAddress.line2 ? `, ${order.shippingAddress.line2}` : ""
+        }, ${order.shippingAddress.postalCode} ${order.shippingAddress.city}, ${order.shippingAddress.country}</p>
+        ${order.shippingAddress.phone ? `<p style="margin:0 0 6px;"><strong>Telefono:</strong> ${order.shippingAddress.phone}</p>` : ""}
+      `
+    : `<p><strong>Email cliente:</strong> ${order.email}</p>`;
+
+  return {
+    subject: `Nuovo ordine pagato ${order.number}`,
+    html: layout(
+      "Nuovo ordine pagato",
+      `
+        <p>Hai ricevuto un nuovo ordine pagato <strong>${order.number}</strong>.</p>
+        <p>Totale: <strong>${formatPrice(order.total)}</strong></p>
+        ${shipping}
+        <p style="margin:18px 0 8px;"><strong>Articoli:</strong></p>
+        <ul>${items}</ul>
+      `
+    )
+  };
+}
+
 export async function sendOrderReceivedEmail(orderId: string) {
   const { order } = await orderSummary(orderId);
   const template = await orderReceivedTemplate(orderId);
@@ -166,6 +196,22 @@ export async function sendRefundIssuedEmail(orderId: string) {
   return resend.emails.send({
     from: emailFrom,
     to: order.email,
+    replyTo: emailReplyTo,
+    subject: template.subject,
+    html: template.html
+  });
+}
+
+export async function sendAdminOrderPaidEmail(orderId: string) {
+  if (!orderNotificationEmail) {
+    return null;
+  }
+
+  const template = await adminOrderPaidTemplate(orderId);
+
+  return resend.emails.send({
+    from: emailFrom,
+    to: orderNotificationEmail,
     replyTo: emailReplyTo,
     subject: template.subject,
     html: template.html

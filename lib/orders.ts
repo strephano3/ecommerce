@@ -1,6 +1,7 @@
 import { OrderStatus, PaymentStatus } from "@prisma/client";
 
 import {
+  sendAdminOrderPaidEmail,
   sendOrderShippedEmail,
   sendPaymentConfirmedEmail,
   sendRefundIssuedEmail
@@ -198,6 +199,7 @@ export async function updateOrderPaymentState(input: {
 
   if (before && before.paymentStatus !== PaymentStatus.PAID && input.paymentStatus === PaymentStatus.PAID) {
     await runEmailTask("payment_confirmed", () => sendPaymentConfirmedEmail(order.id));
+    await runEmailTask("admin_order_paid", () => sendAdminOrderPaidEmail(order.id));
   }
 
   return order;
@@ -288,6 +290,7 @@ export async function updateOrderAdmin(input: {
 
   if (current.paymentStatus !== PaymentStatus.PAID && input.paymentStatus === PaymentStatus.PAID) {
     await runEmailTask("payment_confirmed_admin", () => sendPaymentConfirmedEmail(order.id));
+    await runEmailTask("admin_order_paid_admin", () => sendAdminOrderPaidEmail(order.id));
   }
 
   return order;
