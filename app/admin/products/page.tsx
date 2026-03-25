@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { readProducts } from "@/lib/products";
 import { formatPrice } from "@/lib/utils";
@@ -22,14 +23,26 @@ async function deleteProductAction(formData: FormData) {
   }
 
   const { deleteProduct } = await import("@/lib/products");
-  await deleteProduct(id);
+  const result = await deleteProduct(id);
   revalidatePath("/");
   revalidatePath("/shop");
   revalidatePath("/admin/products");
+
+  if (result.outcome === "archived") {
+    redirect("/admin/products?notice=archived");
+  }
+
+  redirect("/admin/products?notice=deleted");
 }
 
-export default async function AdminProductsPage() {
+export default async function AdminProductsPage({
+  searchParams
+}: {
+  searchParams?: Promise<{ notice?: string }>;
+}) {
   const products = await readProducts();
+  const params = searchParams ? await searchParams : undefined;
+  const notice = params?.notice;
 
   return (
     <section className="section">
@@ -42,6 +55,16 @@ export default async function AdminProductsPage() {
           Crea prodotto
         </Link>
       </div>
+
+      {notice === "deleted" ? (
+        <p className="form-success">Prodotto eliminato.</p>
+      ) : null}
+
+      {notice === "archived" ? (
+        <p className="helper-text">
+          Il prodotto non poteva essere eliminato perché presente nello storico ordini. È stato archiviato.
+        </p>
+      ) : null}
 
       {products.length > 0 ? (
         <div className="admin-table">

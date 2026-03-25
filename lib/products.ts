@@ -203,12 +203,33 @@ export async function updateProduct(id: string, payload: ProductPayload) {
 }
 
 export async function deleteProduct(id: string) {
-  const exists = await prisma.product.findUnique({ where: { id }, select: { id: true } });
+  const exists = await prisma.product.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      orderItems: {
+        select: { id: true },
+        take: 1
+      }
+    }
+  });
 
   if (!exists) {
-    return false;
+    return { outcome: "not_found" as const };
+  }
+
+  if (exists.orderItems.length > 0) {
+    await prisma.product.update({
+      where: { id },
+      data: {
+        status: ProductStatus.ARCHIVED,
+        featured: false
+      }
+    });
+
+    return { outcome: "archived" as const };
   }
 
   await prisma.product.delete({ where: { id } });
-  return true;
+  return { outcome: "deleted" as const };
 }

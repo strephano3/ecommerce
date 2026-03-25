@@ -36,14 +36,14 @@ export async function DELETE(
   }
 
   const { id } = await params;
-  const deleted = await deleteProduct(id);
+  const result = await deleteProduct(id);
 
-  if (!deleted) {
+  if (result.outcome === "not_found") {
     return NextResponse.json({ message: "Not found" }, { status: 404 });
   }
 
   revalidatePath("/");
   revalidatePath("/shop");
   revalidatePath("/admin/products");
-  return NextResponse.json({ ok: true });
+  return NextResponse.json(result);
 }
