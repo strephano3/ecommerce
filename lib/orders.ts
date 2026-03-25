@@ -1,7 +1,6 @@
 import { OrderStatus, PaymentStatus } from "@prisma/client";
 
 import {
-  sendOrderReceivedEmail,
   sendOrderShippedEmail,
   sendPaymentConfirmedEmail,
   sendRefundIssuedEmail
@@ -172,7 +171,6 @@ export async function createOrder(input: CheckoutInput, options: CreateOrderOpti
     });
   });
 
-  await runEmailTask("order_received", () => sendOrderReceivedEmail(order.id));
   return order;
 }
 
