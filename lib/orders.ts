@@ -25,6 +25,14 @@ type CreateOrderOptions = {
   paymentProvider?: string | null;
 };
 
+async function runEmailTask(label: string, task: () => Promise<unknown>) {
+  try {
+    await task();
+  } catch (error) {
+    console.error(`Email task failed: ${label}`, error);
+  }
+}
+
 export async function readOrders() {
   return prisma.order.findMany({
     orderBy: { createdAt: "desc" },
@@ -164,7 +172,7 @@ export async function createOrder(input: CheckoutInput, options: CreateOrderOpti
     });
   });
 
-  void sendOrderReceivedEmail(order.id).catch(() => undefined);
+  await runEmailTask("order_received", () => sendOrderReceivedEmail(order.id));
   return order;
 }
 
@@ -191,7 +199,7 @@ export async function updateOrderPaymentState(input: {
   });
 
   if (before && before.paymentStatus !== PaymentStatus.PAID && input.paymentStatus === PaymentStatus.PAID) {
-    void sendPaymentConfirmedEmail(order.id).catch(() => undefined);
+    await runEmailTask("payment_confirmed", () => sendPaymentConfirmedEmail(order.id));
   }
 
   return order;
@@ -270,18 +278,18 @@ export async function updateOrderAdmin(input: {
   });
 
   if (current.status !== OrderStatus.SHIPPED && input.status === OrderStatus.SHIPPED) {
-    void sendOrderShippedEmail(order.id).catch(() => undefined);
+    await runEmailTask("order_shipped", () => sendOrderShippedEmail(order.id));
   }
 
   if (
     current.paymentStatus !== PaymentStatus.REFUNDED &&
     input.paymentStatus === PaymentStatus.REFUNDED
   ) {
-    void sendRefundIssuedEmail(order.id).catch(() => undefined);
+    await runEmailTask("refund_issued", () => sendRefundIssuedEmail(order.id));
   }
 
   if (current.paymentStatus !== PaymentStatus.PAID && input.paymentStatus === PaymentStatus.PAID) {
-    void sendPaymentConfirmedEmail(order.id).catch(() => undefined);
+    await runEmailTask("payment_confirmed_admin", () => sendPaymentConfirmedEmail(order.id));
   }
 
   return order;
