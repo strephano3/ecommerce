@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { isAdminAuthenticated } from "@/lib/auth";
+import { getProductSaveErrorMessage } from "@/lib/product-errors";
 import { deleteProduct, updateProduct } from "@/lib/products";
 import type { ProductPayload } from "@/lib/types";
 
@@ -15,16 +16,24 @@ export async function PUT(
 
   const { id } = await params;
   const payload = (await request.json()) as ProductPayload;
-  const product = await updateProduct(id, payload);
+  try {
+    const product = await updateProduct(id, payload);
 
-  if (!product) {
-    return NextResponse.json({ message: "Not found" }, { status: 404 });
+    if (!product) {
+      return NextResponse.json({ message: "Not found" }, { status: 404 });
+    }
+
+    revalidatePath("/");
+    revalidatePath("/shop");
+    revalidatePath("/admin/products");
+    return NextResponse.json(product);
+  } catch (error) {
+    console.error("Update product failed", error);
+    return NextResponse.json(
+      { message: getProductSaveErrorMessage(error) },
+      { status: 400 }
+    );
   }
-
-  revalidatePath("/");
-  revalidatePath("/shop");
-  revalidatePath("/admin/products");
-  return NextResponse.json(product);
 }
 
 export async function DELETE(

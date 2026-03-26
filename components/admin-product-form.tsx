@@ -140,8 +140,9 @@ export function AdminProductForm({ initialProduct, mode }: ProductFormProps) {
     });
 
     if (!response.ok) {
+      const data = (await response.json().catch(() => null)) as { message?: string } | null;
       setIsSaving(false);
-      setError("Salvataggio fallito. Controlla i campi e riprova.");
+      setError(data?.message || "Salvataggio fallito. Controlla i campi e riprova.");
       return;
     }
 
