@@ -31,7 +31,11 @@ export default async function AdminOrdersPage() {
               <span>
                 <Link href={`/admin/orders/${order.id}`}>{order.number}</Link>
               </span>
-              <span>{order.email}</span>
+              <span>
+                {order.shippingAddress?.fullName || "Cliente"}
+                <br />
+                {order.email}
+              </span>
               <span>{order.status.toLowerCase()}</span>
               <span>{order.paymentStatus.toLowerCase()}</span>
               <span>{formatPrice(order.total)}</span>

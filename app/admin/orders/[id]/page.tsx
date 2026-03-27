@@ -66,17 +66,33 @@ export default async function AdminOrderDetailPage({
 
       <div className="order-detail-grid">
         <div className="info-card">
-          <h3>Indirizzo spedizione</h3>
+          <h3>Dati checkout e spedizione</h3>
           {order.shippingAddress ? (
             <>
-              <p>{order.shippingAddress.fullName}</p>
-              <p>{order.shippingAddress.line1}</p>
-              {order.shippingAddress.line2 ? <p>{order.shippingAddress.line2}</p> : null}
               <p>
-                {order.shippingAddress.postalCode} {order.shippingAddress.city}
+                <strong>Nome completo:</strong> {order.shippingAddress.fullName}
               </p>
-              <p>{order.shippingAddress.country}</p>
-              <p>{order.shippingAddress.phone || "Telefono non inserito"}</p>
+              <p>
+                <strong>Email:</strong> {order.email}
+              </p>
+              <p>
+                <strong>Telefono:</strong> {order.shippingAddress.phone || "Non inserito"}
+              </p>
+              <p>
+                <strong>Indirizzo:</strong> {order.shippingAddress.line1}
+              </p>
+              <p>
+                <strong>Interno / note:</strong> {order.shippingAddress.line2 || "Non inserito"}
+              </p>
+              <p>
+                <strong>Citta:</strong> {order.shippingAddress.city}
+              </p>
+              <p>
+                <strong>CAP:</strong> {order.shippingAddress.postalCode}
+              </p>
+              <p>
+                <strong>Paese:</strong> {order.shippingAddress.country}
+              </p>
             </>
           ) : (
             <p>Nessun indirizzo associato.</p>

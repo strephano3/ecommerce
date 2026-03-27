@@ -33,6 +33,10 @@ function layout(title: string, body: string) {
   `;
 }
 
+function detailRow(label: string, value: string) {
+  return `<p style="margin:0 0 6px;"><strong>${label}:</strong> ${value}</p>`;
+}
+
 async function orderSummary(orderId: string) {
   const order = await getOrderById(orderId);
 
@@ -126,14 +130,16 @@ async function adminOrderPaidTemplate(orderId: string): Promise<MailTemplate> {
 
   const shipping = order.shippingAddress
     ? `
-        <p style="margin:0 0 6px;"><strong>Cliente:</strong> ${order.shippingAddress.fullName}</p>
-        <p style="margin:0 0 6px;"><strong>Email:</strong> ${order.email}</p>
-        <p style="margin:0 0 6px;"><strong>Indirizzo:</strong> ${order.shippingAddress.line1}${
-          order.shippingAddress.line2 ? `, ${order.shippingAddress.line2}` : ""
-        }, ${order.shippingAddress.postalCode} ${order.shippingAddress.city}, ${order.shippingAddress.country}</p>
-        ${order.shippingAddress.phone ? `<p style="margin:0 0 6px;"><strong>Telefono:</strong> ${order.shippingAddress.phone}</p>` : ""}
+        ${detailRow("Cliente", order.shippingAddress.fullName)}
+        ${detailRow("Email", order.email)}
+        ${detailRow("Telefono", order.shippingAddress.phone || "Non inserito")}
+        ${detailRow("Indirizzo", order.shippingAddress.line1)}
+        ${detailRow("Interno / note", order.shippingAddress.line2 || "Non inserito")}
+        ${detailRow("Citta", order.shippingAddress.city)}
+        ${detailRow("CAP", order.shippingAddress.postalCode)}
+        ${detailRow("Paese", order.shippingAddress.country)}
       `
-    : `<p><strong>Email cliente:</strong> ${order.email}</p>`;
+    : detailRow("Email cliente", order.email);
 
   return {
     subject: `Nuovo ordine pagato ${order.number}`,
@@ -141,7 +147,8 @@ async function adminOrderPaidTemplate(orderId: string): Promise<MailTemplate> {
       "Nuovo ordine pagato",
       `
         <p>Hai ricevuto un nuovo ordine pagato <strong>${order.number}</strong>.</p>
-        <p>Totale: <strong>${formatPrice(order.total)}</strong></p>
+        ${detailRow("Totale", formatPrice(order.total))}
+        ${detailRow("Provider pagamento", order.paymentProvider || "Non impostato")}
         ${shipping}
         <p style="margin:18px 0 8px;"><strong>Articoli:</strong></p>
         <ul>${items}</ul>
