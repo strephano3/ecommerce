@@ -55,6 +55,27 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </Link>
         </div>
 
+        <div className="trust-list">
+          <div className="trust-item">
+            <span className="trust-icon" aria-hidden="true">
+              ✓
+            </span>
+            <span>Pagamenti sicuri</span>
+          </div>
+          <div className="trust-item">
+            <span className="trust-icon" aria-hidden="true">
+              🇮🇹
+            </span>
+            <span>Spedizione in tutta Italia</span>
+          </div>
+          <div className="trust-item">
+            <span className="trust-icon" aria-hidden="true">
+              🚚
+            </span>
+            <span>Resi semplici</span>
+          </div>
+        </div>
+
         <div className="detail-meta">
           <p>Tag: {product.tags.join(", ") || "nessuno"}</p>
           <p>Pagamenti disponibili al checkout: Stripe, Apple Pay, Klarna e PayPal.</p>

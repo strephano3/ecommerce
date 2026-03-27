@@ -310,6 +310,27 @@ button {
   margin-top: 20px;
 }
 
+.trust-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+}
+
+.trust-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+}
+
 .empty-state {
   border: 1px dashed var(--border);
   border-radius: 20px;
