@@ -312,23 +312,81 @@ button {
 
 .trust-list {
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin-top: 18px;
 }
 
 .trust-item {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 12px;
   color: var(--text);
+  border: 1px solid var(--border);
+  background: #faf7f0;
+  border-radius: 18px;
+  padding: 14px 16px;
 }
 
 .trust-icon {
   display: inline-grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
-  flex: 0 0 24px;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border-radius: 999px;
+  background: #f1eadc;
+  color: var(--text);
+}
+
+.trust-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.trust-copy {
+  display: grid;
+  gap: 3px;
+}
+
+.trust-copy strong {
+  font-size: 0.94rem;
+  line-height: 1.15;
+}
+
+.trust-copy small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.trust-icon-safe {
+  color: #2f6f39;
+}
+
+.trust-icon-returns {
+  color: #73593a;
+}
+
+.flag-it {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 18px;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 3px;
+  border: 1px solid rgba(30, 36, 26, 0.08);
+}
+
+.flag-it span:nth-child(1) {
+  background: #1f8b4c;
+}
+
+.flag-it span:nth-child(2) {
+  background: #fffdf9;
+}
+
+.flag-it span:nth-child(3) {
+  background: #d34a4a;
 }
 
 .empty-state {
@@ -843,6 +901,10 @@ textarea {
   .cart-item,
   .cookie-panel {
     padding: 16px;
+  }
+
+  .trust-list {
+    grid-template-columns: 1fr;
   }
 
   .product-card-row,
