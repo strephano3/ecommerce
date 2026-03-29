@@ -264,8 +264,6 @@ h2 {
   border-radius: 20px;
   overflow: visible;
   background: transparent;
-  display: grid;
-  gap: 12px;
 }
 
 .product-gallery-stage {
@@ -274,6 +272,11 @@ h2 {
   border-radius: 20px;
   overflow: hidden;
   background: #ebe4d7;
+}
+
+.product-gallery-stage.is-poster {
+  aspect-ratio: 1587 / 2245;
+  min-height: 0;
 }
 
 .product-gallery-main {
@@ -288,26 +291,30 @@ h2 {
   cursor: zoom-in;
 }
 
-.product-gallery-thumbs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 12px;
+.product-gallery-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(30, 36, 26, 0.08);
+  background: rgba(255, 253, 249, 0.9);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  font-size: 1.8rem;
+  line-height: 1;
+  backdrop-filter: blur(8px);
 }
 
-.product-thumb {
-  position: relative;
-  width: 84px;
-  aspect-ratio: 4 / 5;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background: #f7f3ea;
-  padding: 0;
+.product-gallery-arrow.is-left {
+  left: 16px;
 }
 
-.product-thumb.is-active {
-  border-color: var(--text);
+.product-gallery-arrow.is-right {
+  right: 16px;
 }
 
 .product-lightbox {
@@ -324,6 +331,12 @@ h2 {
   position: relative;
   max-width: min(92vw, 1200px);
   max-height: 88vh;
+}
+
+.product-gallery-arrow.in-lightbox {
+  background: rgba(14, 18, 14, 0.72);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #fff;
 }
 
 .product-lightbox-image {
@@ -1030,9 +1043,18 @@ textarea {
     min-height: 320px;
   }
 
-  .product-thumb {
-    width: calc(25% - 8px);
-    min-width: 68px;
+  .product-gallery-arrow {
+    width: 38px;
+    height: 38px;
+    font-size: 1.55rem;
+  }
+
+  .product-gallery-arrow.is-left {
+    left: 12px;
+  }
+
+  .product-gallery-arrow.is-right {
+    right: 12px;
   }
 
   .size-grid {

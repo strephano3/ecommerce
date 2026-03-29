@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { ProductImageGallery } from "@/components/product-image-gallery";
+import { inferProductKind } from "@/lib/product-kind";
 import { getProductBySlug } from "@/lib/products";
 import { formatPrice } from "@/lib/utils";
 
@@ -16,10 +17,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     notFound();
   }
 
+  const isPoster = inferProductKind(product) === "poster";
+
   return (
     <section className="section product-detail">
       <div className="product-detail-media">
-        <ProductImageGallery images={product.images} productName={product.name} />
+        <ProductImageGallery images={product.images} productName={product.name} isPoster={isPoster} />
       </div>
 
       <div className="product-detail-copy">

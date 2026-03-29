@@ -7,10 +7,12 @@ import type { ProductImage } from "@/lib/types";
 
 export function ProductImageGallery({
   images,
-  productName
+  productName,
+  isPoster = false
 }: {
   images: ProductImage[];
   productName: string;
+  isPoster?: boolean;
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -31,6 +33,15 @@ export function ProductImageGallery({
   }, [lightboxOpen]);
 
   const activeImage = images[activeIndex];
+  const hasMultipleImages = images.length > 1;
+
+  function showPrevious() {
+    setActiveIndex((current) => (current === 0 ? images.length - 1 : current - 1));
+  }
+
+  function showNext() {
+    setActiveIndex((current) => (current === images.length - 1 ? 0 : current + 1));
+  }
 
   if (!activeImage) {
     return <div className="product-card-placeholder">touch grass</div>;
@@ -38,7 +49,7 @@ export function ProductImageGallery({
 
   return (
     <>
-      <div className="product-gallery-stage">
+      <div className={`product-gallery-stage ${isPoster ? "is-poster" : ""}`}>
         <button
           type="button"
           className="product-gallery-main"
@@ -52,23 +63,28 @@ export function ProductImageGallery({
             sizes="(max-width: 960px) 100vw, 50vw"
           />
         </button>
-      </div>
 
-      {images.length > 1 ? (
-        <div className="product-gallery-thumbs">
-          {images.map((image, index) => (
+        {hasMultipleImages ? (
+          <>
             <button
-              key={image.id}
               type="button"
-              className={`product-thumb ${index === activeIndex ? "is-active" : ""}`}
-              onClick={() => setActiveIndex(index)}
-              aria-label={`Apri immagine ${index + 1}`}
+              className="product-gallery-arrow is-left"
+              onClick={showPrevious}
+              aria-label="Immagine precedente"
             >
-              <Image src={image.url} alt={image.alt || productName} fill sizes="84px" />
+              ‹
             </button>
-          ))}
-        </div>
-      ) : null}
+            <button
+              type="button"
+              className="product-gallery-arrow is-right"
+              onClick={showNext}
+              aria-label="Immagine successiva"
+            >
+              ›
+            </button>
+          </>
+        ) : null}
+      </div>
 
       {lightboxOpen ? (
         <div className="product-lightbox" onClick={() => setLightboxOpen(false)}>
@@ -81,6 +97,26 @@ export function ProductImageGallery({
             ×
           </button>
           <div className="product-lightbox-frame" onClick={(event) => event.stopPropagation()}>
+            {hasMultipleImages ? (
+              <>
+                <button
+                  type="button"
+                  className="product-gallery-arrow is-left in-lightbox"
+                  onClick={showPrevious}
+                  aria-label="Immagine precedente"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  className="product-gallery-arrow is-right in-lightbox"
+                  onClick={showNext}
+                  aria-label="Immagine successiva"
+                >
+                  ›
+                </button>
+              </>
+            ) : null}
             <img
               src={activeImage.url}
               alt={activeImage.alt || productName}
