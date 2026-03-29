@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
+import { inferProductKind } from "@/lib/product-kind";
 import type { Product } from "@/lib/types";
 import { slugify } from "@/lib/utils";
 
@@ -12,6 +13,7 @@ type ProductFormProps = {
 };
 
 type ProductFormState = {
+  productType: "apparel" | "poster";
   name: string;
   slug: string;
   shortDescription: string;
@@ -30,6 +32,7 @@ type ProductFormState = {
 
 function toFormState(product?: Product): ProductFormState {
   return {
+    productType: product ? inferProductKind(product) : "apparel",
     name: product?.name ?? "",
     slug: product?.slug ?? "",
     shortDescription: product?.shortDescription ?? "",
@@ -70,6 +73,7 @@ export function AdminProductForm({ initialProduct, mode }: ProductFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const isPoster = form.productType === "poster";
 
   async function handleImageUpload(file: File) {
     setIsUploading(true);
@@ -153,6 +157,45 @@ export function AdminProductForm({ initialProduct, mode }: ProductFormProps) {
   return (
     <form className="admin-form" onSubmit={handleSubmit}>
       <div className="admin-form-grid">
+        <label>
+          Tipo prodotto
+          <select
+            value={form.productType}
+            onChange={(event) => {
+              const nextType = event.target.value as ProductFormState["productType"];
+              setForm((current) => {
+                const isCurrentPoster = current.productType === "poster";
+                return {
+                  ...current,
+                  productType: nextType,
+                  category:
+                    nextType === "poster"
+                      ? isCurrentPoster
+                        ? current.category
+                        : current.category || "Poster"
+                      : !isCurrentPoster
+                        ? current.category
+                        : current.category === "Poster"
+                          ? "Abbigliamento"
+                          : current.category,
+                  collection:
+                    nextType === "poster"
+                      ? isCurrentPoster
+                        ? current.collection
+                        : current.collection || "Poster"
+                      : !isCurrentPoster
+                        ? current.collection
+                        : current.collection === "Poster"
+                          ? "Core"
+                          : current.collection
+                };
+              });
+            }}
+          >
+            <option value="apparel">Abbigliamento</option>
+            <option value="poster">Poster</option>
+          </select>
+        </label>
         <label>
           Nome prodotto
           <input
@@ -292,12 +335,16 @@ export function AdminProductForm({ initialProduct, mode }: ProductFormProps) {
       </label>
 
       <label>
-        Taglie e stock
+        {isPoster ? "Formati e stock" : "Taglie e stock"}
         <textarea
           rows={6}
           value={form.sizes}
           onChange={(event) => setForm((current) => ({ ...current, sizes: event.target.value }))}
-          placeholder={"S:TG-TEE-S:12\nM:TG-TEE-M:7\nL:TG-TEE-L:3"}
+          placeholder={
+            isPoster
+              ? "50x70:TG-POSTER-50X70:12\n70x100:TG-POSTER-70X100:7"
+              : "S:TG-TEE-S:12\nM:TG-TEE-M:7\nL:TG-TEE-L:3"
+          }
         />
       </label>
 

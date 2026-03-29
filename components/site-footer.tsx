@@ -22,6 +22,7 @@ export function SiteFooter() {
           <Link href="/cookies">Cookie</Link>
           <Link href="/terms">Termini</Link>
           <Link href="/shop">Negozio</Link>
+          <Link href="/shop/posters">Poster</Link>
           <Link href="/cart">Carrello</Link>
         </p>
       </div>

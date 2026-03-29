@@ -5,7 +5,7 @@ import { AdminLogoutButton } from "@/components/admin-logout-button";
 const adminCards = [
   {
     title: "Prodotti",
-    description: "Crea, modifica e archivia capi con foto, prezzo e taglie.",
+    description: "Crea, modifica e archivia abbigliamento e poster con foto, prezzo e varianti.",
     href: "/admin/products"
   },
   {

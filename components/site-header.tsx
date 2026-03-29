@@ -7,6 +7,7 @@ import { readCart } from "@/lib/cart-storage";
 
 const navItems = [
   { href: "/shop", label: "Negozio" },
+  { href: "/shop/posters", label: "Poster" },
   { href: "/shipping", label: "Spedizioni" },
   { href: "/returns", label: "Resi" },
   { href: "/support", label: "Supporto" },
