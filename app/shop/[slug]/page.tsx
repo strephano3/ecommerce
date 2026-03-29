@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { ProductImageGallery } from "@/components/product-image-gallery";
 import { getProductBySlug } from "@/lib/products";
 import { formatPrice } from "@/lib/utils";
 
@@ -16,16 +16,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     notFound();
   }
 
-  const image = product.images[0];
-
   return (
     <section className="section product-detail">
       <div className="product-detail-media">
-        {image ? (
-          <Image src={image.url} alt={image.alt || product.name} fill sizes="50vw" />
-        ) : (
-          <div className="product-card-placeholder">touch grass</div>
-        )}
+        <ProductImageGallery images={product.images} productName={product.name} />
       </div>
 
       <div className="product-detail-copy">

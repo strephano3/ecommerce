@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
 import { inferProductKind } from "@/lib/product-kind";
-import type { Product } from "@/lib/types";
+import type { Product, ProductImage } from "@/lib/types";
 import { slugify } from "@/lib/utils";
 
 type ProductFormProps = {
@@ -25,10 +25,17 @@ type ProductFormState = {
   tags: string;
   status: Product["status"];
   featured: boolean;
-  imageUrl: string;
-  imageAlt: string;
+  images: ProductImage[];
   sizes: string;
 };
+
+function createImageDraft(image?: Partial<ProductImage>, index = 0): ProductImage {
+  return {
+    id: image?.id || `image-${Date.now()}-${index}`,
+    url: image?.url || "",
+    alt: image?.alt || ""
+  };
+}
 
 function toFormState(product?: Product): ProductFormState {
   return {
@@ -44,8 +51,10 @@ function toFormState(product?: Product): ProductFormState {
     tags: product?.tags.join(", ") ?? "",
     status: product?.status ?? "draft",
     featured: product?.featured ?? false,
-    imageUrl: product?.images[0]?.url ?? "",
-    imageAlt: product?.images[0]?.alt ?? "",
+    images:
+      product?.images.length
+        ? product.images.map((image, index) => createImageDraft(image, index))
+        : [createImageDraft(undefined, 0)],
     sizes:
       product?.variants.map((variant) => `${variant.size}:${variant.sku}:${variant.stock}`).join("\n") ?? ""
   };
@@ -75,29 +84,41 @@ export function AdminProductForm({ initialProduct, mode }: ProductFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const isPoster = form.productType === "poster";
 
-  async function handleImageUpload(file: File) {
+  async function handleImageUpload(files: FileList | File[]) {
     setIsUploading(true);
     setError(null);
 
-    const body = new FormData();
-    body.append("file", file);
+    const uploadedImages: ProductImage[] = [];
 
-    const response = await fetch("/api/uploads", {
-      method: "POST",
-      body
-    });
+    for (const [index, file] of Array.from(files).entries()) {
+      const body = new FormData();
+      body.append("file", file);
 
-    if (!response.ok) {
-      setError("Upload immagine fallito.");
-      setIsUploading(false);
-      return;
+      const response = await fetch("/api/uploads", {
+        method: "POST",
+        body
+      });
+
+      if (!response.ok) {
+        setError("Upload immagine fallito.");
+        setIsUploading(false);
+        return;
+      }
+
+      const data = (await response.json()) as { url: string };
+      uploadedImages.push({
+        id: `upload-${Date.now()}-${index}`,
+        url: data.url,
+        alt: file.name.replace(/\.[^/.]+$/, "")
+      });
     }
 
-    const data = (await response.json()) as { url: string };
     setForm((current) => ({
       ...current,
-      imageUrl: data.url,
-      imageAlt: current.imageAlt || current.name
+      images: [...current.images.filter((image) => image.url.trim()), ...uploadedImages].map((image, index) => ({
+        ...image,
+        alt: image.alt || current.name || `Immagine ${index + 1}`
+      }))
     }));
     setIsUploading(false);
   }
@@ -122,15 +143,13 @@ export function AdminProductForm({ initialProduct, mode }: ProductFormProps) {
         .filter(Boolean),
       status: form.status,
       featured: form.featured,
-      images: form.imageUrl
-        ? [
-            {
-              id: "cover",
-              url: form.imageUrl,
-              alt: form.imageAlt || form.name
-            }
-          ]
-        : [],
+      images: form.images
+        .filter((image) => image.url.trim())
+        .map((image, index) => ({
+          id: image.id || `cover-${index}`,
+          url: image.url,
+          alt: image.alt || form.name
+        })),
       variants: parseSizes(form.sizes)
     };
 
@@ -295,31 +314,80 @@ export function AdminProductForm({ initialProduct, mode }: ProductFormProps) {
       </label>
 
       <div className="admin-form-grid">
-        <label>
-          URL immagine Cloudinary
-          <input
-            value={form.imageUrl}
-            onChange={(event) => setForm((current) => ({ ...current, imageUrl: event.target.value }))}
-          />
-        </label>
-        <label>
-          Alt immagine
-          <input
-            value={form.imageAlt}
-            onChange={(event) => setForm((current) => ({ ...current, imageAlt: event.target.value }))}
-          />
-        </label>
+        {form.images.map((image, index) => (
+          <div key={image.id} className="image-entry">
+            <label>
+              URL immagine {index + 1}
+              <input
+                value={image.url}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    images: current.images.map((entry) =>
+                      entry.id === image.id ? { ...entry, url: event.target.value } : entry
+                    )
+                  }))
+                }
+              />
+            </label>
+            <label>
+              Alt immagine {index + 1}
+              <input
+                value={image.alt}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    images: current.images.map((entry) =>
+                      entry.id === image.id ? { ...entry, alt: event.target.value } : entry
+                    )
+                  }))
+                }
+              />
+            </label>
+            <button
+              type="button"
+              className="text-button"
+              onClick={() =>
+                setForm((current) => ({
+                  ...current,
+                  images:
+                    current.images.length > 1
+                      ? current.images.filter((entry) => entry.id !== image.id)
+                      : [createImageDraft(undefined, 0)]
+                }))
+              }
+            >
+              Rimuovi immagine
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="admin-actions">
+        <button
+          type="button"
+          className="button button-light"
+          onClick={() =>
+            setForm((current) => ({
+              ...current,
+              images: [...current.images, createImageDraft(undefined, current.images.length)]
+            }))
+          }
+        >
+          Aggiungi immagine
+        </button>
       </div>
 
       <label>
-        Carica immagine
+        Carica una o piu immagini
         <input
           type="file"
           accept="image/*"
+          multiple
           onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) {
-              void handleImageUpload(file);
+            const files = event.target.files;
+            if (files?.length) {
+              void handleImageUpload(files);
             }
           }}
         />

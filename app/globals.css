@@ -262,6 +262,95 @@ h2 {
 .product-detail-media {
   min-height: 620px;
   border-radius: 20px;
+  overflow: visible;
+  background: transparent;
+  display: grid;
+  gap: 12px;
+}
+
+.product-gallery-stage {
+  position: relative;
+  min-height: 620px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #ebe4d7;
+}
+
+.product-gallery-main {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 620px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.product-gallery-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.product-thumb {
+  position: relative;
+  width: 84px;
+  aspect-ratio: 4 / 5;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #f7f3ea;
+  padding: 0;
+}
+
+.product-thumb.is-active {
+  border-color: var(--text);
+}
+
+.product-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: rgba(18, 22, 18, 0.82);
+  padding: 24px;
+}
+
+.product-lightbox-frame {
+  position: relative;
+  max-width: min(92vw, 1200px);
+  max-height: 88vh;
+}
+
+.product-lightbox-image {
+  display: block;
+  max-width: 100%;
+  max-height: 88vh;
+  width: auto;
+  height: auto;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.product-lightbox-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(14, 18, 14, 0.75);
+  color: #fff;
+  font-size: 1.8rem;
+  line-height: 1;
+  display: grid;
+  place-items: center;
 }
 
 .product-card-placeholder {
@@ -546,6 +635,24 @@ button {
 .admin-form {
   display: grid;
   gap: 18px;
+}
+
+.image-entry {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #faf7f0;
+}
+
+.text-button {
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
 }
 
 .narrow-form {
@@ -916,6 +1023,16 @@ textarea {
 
   .product-detail-media {
     min-height: 320px;
+  }
+
+  .product-gallery-stage,
+  .product-gallery-main {
+    min-height: 320px;
+  }
+
+  .product-thumb {
+    width: calc(25% - 8px);
+    min-width: 68px;
   }
 
   .size-grid {
