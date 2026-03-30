@@ -38,8 +38,10 @@ function createImageDraft(image?: Partial<ProductImage>, index = 0): ProductImag
 }
 
 function toFormState(product?: Product): ProductFormState {
+  const productType = product ? inferProductKind(product) : "apparel";
+
   return {
-    productType: product ? inferProductKind(product) : "apparel",
+    productType,
     name: product?.name ?? "",
     slug: product?.slug ?? "",
     shortDescription: product?.shortDescription ?? "",
@@ -56,17 +58,40 @@ function toFormState(product?: Product): ProductFormState {
         ? product.images.map((image, index) => createImageDraft(image, index))
         : [createImageDraft(undefined, 0)],
     sizes:
-      product?.variants.map((variant) => `${variant.size}:${variant.sku}:${variant.stock}`).join("\n") ?? ""
+      product?.variants
+        .map((variant) =>
+          productType === "poster" ? `${variant.size}:${variant.stock}` : `${variant.size}:${variant.sku}:${variant.stock}`
+        )
+        .join("\n") ?? ""
   };
 }
 
-function parseSizes(value: string) {
+function makePosterSku(baseValue: string, format: string) {
+  return `${slugify(baseValue || "poster")}-${slugify(format)}`;
+}
+
+function parseSizes(value: string, productType: ProductFormState["productType"], baseValue: string) {
   return value
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line, index) => {
-      const [size, sku, stock] = line.split(":");
+      const parts = line.split(":").map((part) => part.trim());
+
+      if (productType === "poster") {
+        const [size, second, third] = parts;
+        const stock = third !== undefined ? Number(third ?? 0) : Number(second ?? 0);
+        const sku = third !== undefined ? second || makePosterSku(baseValue, size || "") : makePosterSku(baseValue, size || "");
+
+        return {
+          id: `${size ?? "size"}-${index}`,
+          size: size?.trim() ?? "",
+          sku,
+          stock: Number.isFinite(stock) ? stock : 0
+        };
+      }
+
+      const [size, sku, stock] = parts;
       return {
         id: `${size ?? "size"}-${index}`,
         size: size?.trim() ?? "",
@@ -150,7 +175,7 @@ export function AdminProductForm({ initialProduct, mode }: ProductFormProps) {
           url: image.url,
           alt: image.alt || form.name
         })),
-      variants: parseSizes(form.sizes)
+      variants: parseSizes(form.sizes, form.productType, form.slug || form.name)
     };
 
     const endpoint = mode === "create" ? "/api/products" : `/api/products/${initialProduct?.id}`;
@@ -414,6 +439,11 @@ export function AdminProductForm({ initialProduct, mode }: ProductFormProps) {
               : "S:TG-TEE-S:12\nM:TG-TEE-M:7\nL:TG-TEE-L:3"
           }
         />
+        <span className="helper-text">
+          {isPoster
+            ? "Per i poster scrivi formato:stock, per esempio 50x70:12."
+            : "Per l'abbigliamento scrivi taglia:SKU:stock, per esempio M:TG-TEE-M:7."}
+        </span>
       </label>
 
       {error ? <p className="form-error">{error}</p> : null}
